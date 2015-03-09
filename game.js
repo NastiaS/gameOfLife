@@ -104,7 +104,7 @@ var gameOfLife = {
       // QUESTION TO ASK YOURSELF: What is "this" equal to here?
       
       // how to set the style of the cell when it's clicked
-      if (this.getAttribute('data-status') == 'dead') {
+      if (this.className != 'alive') {
         this.className = "alive";
         //this.setAttribute('data-status', 'alive');
       } else {
