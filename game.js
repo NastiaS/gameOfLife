@@ -1,8 +1,8 @@
 var gameOfLife = {
-  width: 80,
-  height: 50,
+  width: 280,
+  height: 200,
   playing: null,
-  stepInterval: 50,
+  stepInterval: 250,
 
   createAndShowBoard: function () {
     // create <table> element
@@ -90,7 +90,7 @@ var gameOfLife = {
           }
 
 
-          cell.className = iteratorFunc(currentlyAlive, numberAlive);
+          cell.className = iteratorFunc(currentlyAlive, numberAlive, h, w);
           //cell.setAttribute('data-status', iteratorFunc(currentlyAlive, numberAlive))
         }
       }
@@ -122,11 +122,24 @@ var gameOfLife = {
     }
     
 
+    //Loop through the elements in cells.
+    //For each element, grab the name, and make inner html which works with the select tag.
+    //Add this html to the HTML element with the "options" id.
+    var newArr = [];
+    for (var i = 0; i < cells.length; i++){
+      newArr.push("<option value="  + cells[i].name + ">" + cells[i].name + "</option>");
+    }
+    document.getElementById('options').innerHTML = newArr.join('');
+
     document.getElementById('step_btn').onclick = function(e){gameOfLife.step();};
     document.getElementById('play_btn').onclick = function(e){gameOfLife.enableAutoPlay();}
-      document.getElementById('reset_btn').onclick = function(e){gameOfLife.resetRandom();}
+    document.getElementById('reset_btn').onclick = function(e){gameOfLife.resetRandom();}
     document.getElementById('clear_btn').onclick = function(e){gameOfLife.clearBoard();}
     document.getElementById('stop_btn').onclick = function(e){gameOfLife.stopBoard();}
+    document.getElementById('special_element').onclick = function(e){gameOfLife.setDownElement();}
+
+
+
 
   },
 
@@ -172,18 +185,48 @@ var gameOfLife = {
 
   resetRandom: function(){
   
-  function random(){
-    //return 'alive' 1/3 the time and 'dead' 2/3 the time.
-    var randomNumber = Math.random();
-    if(randomNumber <= 0.3){
-      return 'alive';
+    function random(){
+      //return 'alive' 1/3 the time and 'dead' 2/3 the time.
+      var randomNumber = Math.random();
+      if(randomNumber <= 0.3){
+        return 'alive';
+      }
+      else return 'dead';
     }
-    else return 'dead';
+
+    this.forEachCell(random);
+
+  },
+
+  setDownElement: function(){
+    this.clearBoard();
+    var grid = cells.filter(function(obj){return obj.name == document.getElementById('options').value;})[0].grid
+    var gridHeight = grid.length;
+    var gridWidth = grid[0].length;
+
+    var elementTopCorner = Math.floor(this.height / 2 - gridHeight / 2);
+    var elementLeftCorner = Math.floor(this.width / 2 - gridWidth / 2);
+    var elementLowerCorner = elementTopCorner + gridHeight - 1;
+    var elementRightCorner = elementLeftCorner + gridWidth - 1;
+
+    function makeElement(alive, current, height, width){
+
+      if (height < elementTopCorner || height > elementLowerCorner){return 'dead'}
+        else{
+          if (width < elementLeftCorner || width > elementRightCorner){return 'dead'}
+            else{
+              if (grid[height - elementTopCorner][width - elementLeftCorner] == 1){
+                return 'alive';
+              }else{
+                return 'dead';
+              }
+            }
+        }
+        return 'dead'
+    }
+
+    this.forEachCell(makeElement);
   }
-
-  this.forEachCell(random);
-
-}
 
 };
 
