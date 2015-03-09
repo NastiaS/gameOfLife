@@ -1,7 +1,8 @@
 var gameOfLife = {
-  width: 12,
-  height: 12,
-  stepInterval: null,
+  width: 80,
+  height: 50,
+  playing: null,
+  stepInterval: 50,
 
   createAndShowBoard: function () {
     // create <table> element
@@ -32,58 +33,161 @@ var gameOfLife = {
       each cell on the board, call the "iteratorFunc" function,
       and pass into func, the cell and the cell's x & y
       coordinates. For example: iteratorFunc(cell, x, y)
-    */
+  
+
+
+      //Pull the values of each cell and put into an array.
+ */   var board = [];
+      for (var h = 0; h < this.height; h++){
+        board.push([])
+        for (var w = 0; w < this.width; w++){
+          var cell = document.getElementById(w + '-' + h);
+          var dataStatus = cell.className;
+          if(dataStatus === 'alive'){
+            board[h].push(1)
+          }else{
+            board[h].push(0)
+          }
+        }
+      }
+
+
+      for (var h = 0; h < this.height; h++){
+        for (var w = 0; w < this.width; w++){
+          var cell = document.getElementById(w + '-' + h);
+          //determine how many neighbors are alive and how many are dead
+          var currentlyAlive = 0;
+          if(board[h][w] === 1){
+            currentlyAlive++
+          }
+
+          var numberAlive = 0;
+          if(w != 0 && board[h][w-1] === 1){
+            numberAlive++;
+          }
+          if(w != 0 && h != 0 && board[h-1][w-1] === 1){
+            numberAlive++;
+          }
+          if(w != 0 && h != this.height - 1 && board[h+1][w-1] === 1){
+            numberAlive++;
+          }
+
+          if(h != 0 && board[h-1][w] === 1){
+            numberAlive ++;
+          }
+          if(h != this.height -1 && board[h+1][w] === 1){
+            numberAlive ++;
+          }
+
+          if(w != this.width -1 && board[h][w+1] === 1){
+            numberAlive ++;
+          }
+          if(h != this.height-1 && w != this.width -1 && board[h+1][w+1] === 1){
+            numberAlive ++;
+          }
+          if(h != 0 && h != this.height-1 && board[h-1][w+1] === 1){
+            numberAlive ++;
+          }
+
+
+          cell.className = iteratorFunc(currentlyAlive, numberAlive);
+          //cell.setAttribute('data-status', iteratorFunc(currentlyAlive, numberAlive))
+        }
+      }
+   
   },
   
   setupBoardEvents: function() {
-    // each board cell has an CSS id in the format of: "x-y" 
-    // where x is the x-coordinate and y the y-coordinate
-    // use this fact to loop through all the ids and assign
-    // them "on-click" events that allow a user to click on 
-    // cells to setup the initial state of the game
-    // before clicking "Step" or "Auto-Play"
-    
-    // clicking on a cell should toggle the cell between "alive" & "dead"
-    // for ex: an "alive" cell be colored "blue", a dead cell could stay white
-    
-    // EXAMPLE FOR ONE CELL
-    // Here is how we would catch a click event on just the 0-0 cell
-    // You need to add the click event on EVERY cell on the board
-    
+
+
     var onCellClick = function (e) {
       // QUESTION TO ASK YOURSELF: What is "this" equal to here?
       
       // how to set the style of the cell when it's clicked
       if (this.getAttribute('data-status') == 'dead') {
         this.className = "alive";
-        this.setAttribute('data-status', 'alive');
+        //this.setAttribute('data-status', 'alive');
       } else {
         this.className = "dead";
-        this.setAttribute('data-status', 'dead');
+        //this.setAttribute('data-status', 'dead');
       }
     };
+
+    for (var h = 0; h < this.height; h++){
+      for (var w = 0; w < this.width; w++){
+        var cell = document.getElementById(w + '-' + h);
+        cell.onclick = onCellClick;
+
+      }
+    }
     
-    var cell00 = document.getElementById('0-0');
-    cell00.onclick = onCellClick;
+
+    document.getElementById('step_btn').onclick = function(e){gameOfLife.step();};
+    document.getElementById('play_btn').onclick = function(e){gameOfLife.enableAutoPlay();}
+      document.getElementById('reset_btn').onclick = function(e){gameOfLife.resetRandom();}
+    document.getElementById('clear_btn').onclick = function(e){gameOfLife.clearBoard();}
+    document.getElementById('stop_btn').onclick = function(e){gameOfLife.stopBoard();}
+
   },
 
+
   step: function () {
-    // Here is where you want to loop through all the cells
-    // on the board and determine, based on it's neighbors,
-    // whether the cell should be dead or alive in the next
-    // evolution of the game. 
-    //
-    // You need to:
-    // 1. Count alive neighbors for all cells
-    // 2. Set the next state of all cells based on their alive neighbors
+
+    var gameOfLifeRules = function(alive, neighbors){
+       
+      if (alive === 0){
+        if(neighbors === 3){
+          return 'alive';
+        }
+        else return 'dead';
+
+      }
+      else {
+        if(neighbors === 2 || neighbors === 3){
+          return 'alive';
+        }
+        else return 'dead';
+
+      }
+       //Determine whether to return "alive" or "dead"
+    };
+
+    this.forEachCell(gameOfLifeRules);
+
     
   },
 
   enableAutoPlay: function () {
-    // Start Auto-Play by running the 'step' function
-    // automatically repeatedly every fixed time interval
-    
+    var that = this;
+    this.playing = window.setInterval(function(){that.step();}, that.stepInterval);
+  },
+
+  stopBoard: function(){
+    window.clearInterval(this.playing);
+  },
+
+  clearBoard: function(){
+    this.forEachCell(function(){return 'dead'});
+  },
+
+  resetRandom: function(){
+  
+  function random(){
+    //return 'alive' 1/3 the time and 'dead' 2/3 the time.
+    var randomNumber = Math.random();
+    if(randomNumber <= 0.3){
+      return 'alive';
+    }
+    else return 'dead';
   }
+
+  this.forEachCell(random);
+
+}
+
 };
+
+
+
 
   gameOfLife.createAndShowBoard();
